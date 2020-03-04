@@ -13,9 +13,9 @@ CenteredGridView {
     id: pcGrid
     focus: true
     activeFocusOnTab: true
-    topMargin: 20
+    topMargin: 35
     bottomMargin: 5
-    cellWidth: 310; cellHeight: 330;
+    cellWidth: 210; cellHeight: 230;
     objectName: "Computers"
 
     Component.onCompleted: {
@@ -89,7 +89,7 @@ CenteredGridView {
             elide: Label.ElideRight
             text: StreamingPreferences.enableMdns ? "Searching for PCs with NVIDIA GameStream enabled..."
                                                   : "Automatic PC discovery is disabled. Add your PC manually."
-            font.pointSize: 20
+            font.pointSize: 8
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.Wrap
         }
@@ -98,7 +98,7 @@ CenteredGridView {
     model: computerModel
 
     delegate: NavigableItemDelegate {
-        width: 300; height: 320;
+        width: 200; height: 220;
         grid: pcGrid
 
         Image {
@@ -106,8 +106,8 @@ CenteredGridView {
             anchors.horizontalCenter: parent.horizontalCenter
             source: "qrc:/res/desktop_windows-48px.svg"
             sourceSize {
-                width: 200
-                height: 200
+                width: 100
+                height: 100
             }
         }
 
@@ -142,7 +142,7 @@ CenteredGridView {
             width: parent.width
             anchors.top: pcIcon.bottom
             anchors.bottom: parent.bottom
-            font.pointSize: 36
+            font.pointSize: 26
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             elide: Text.ElideRight

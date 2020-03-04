@@ -156,7 +156,7 @@ Item {
             id: stageLabel
             height: stageSpinner.height
             text: stageText
-            font.pointSize: 20
+            font.pointSize: 12
             verticalAlignment: Text.AlignVCenter
 
             wrapMode: Text.Wrap
@@ -168,7 +168,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 50
         anchors.horizontalCenter: parent.horizontalCenter
-        font.pointSize: 18
+        font.pointSize: 6
         verticalAlignment: Text.AlignVCenter
 
         wrapMode: Text.Wrap

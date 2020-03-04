@@ -14,16 +14,23 @@ ApplicationWindow {
 
     id: window
     visible: true
-    width: 1280
-    height: 600
+    width: 480
+    height: 320
+    contentOrientation: Qt.InvertedLandscapeOrientation
 
     visibility: (SystemProperties.hasWindowManager && StreamingPreferences.startWindowed) ? "Windowed" : "Maximized"
 
     StackView {
         id: stackView
         initialItem: initialView
-        anchors.fill: parent
         focus: true
+        anchors.left: parent.left
+        anchors.top: parent.bottom
+        width: 480
+        height: 320
+        transform: Rotation {
+             angle: -90
+        }
 
         onCurrentItemChanged: {
             // Ensure focus travels to the next view when going back
@@ -171,9 +178,15 @@ ApplicationWindow {
 
     header: ToolBar {
         id: toolBar
-        height: 60
+        height: 50
+        width: Screen.height
         anchors.topMargin: 5
         anchors.bottomMargin: 5
+        transform: Rotation {
+             angle: -90
+             origin.x: Screen.height / 2
+             origin.y: Screen.height / 2
+        }
 
         RowLayout {
             spacing: 20

@@ -8,6 +8,7 @@ extern "C" {
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <cerrno>
 
 #include "streaming/streamutils.h"
 #include "streaming/session.h"
@@ -16,6 +17,7 @@ extern "C" {
 
 DrmRenderer::DrmRenderer()
     : m_DrmFd(-1),
+      m_RotPrimeFd(-1),
       m_CrtcId(0),
       m_PlaneId(0),
       m_CurrentFbId(0)
@@ -31,6 +33,12 @@ DrmRenderer::~DrmRenderer()
     if (m_DrmFd != -1) {
         close(m_DrmFd);
     }
+
+    if (m_RotPrimeFd != -1) {
+        close(m_RotPrimeFd);
+    }
+
+    c_RkRgaDeInit();
 }
 
 bool DrmRenderer::prepareDecoderContext(AVCodecContext*, AVDictionary**)
@@ -47,6 +55,9 @@ bool DrmRenderer::initialize(PDECODER_PARAMETERS)
 {
     const char* device = SDL_getenv("DRM_DEV");
     int i;
+
+    src_info = {};
+    dst_info = {};
 
     if (device == nullptr) {
         device = "/dev/dri/card0";
@@ -188,6 +199,43 @@ bool DrmRenderer::initialize(PDECODER_PARAMETERS)
     return true;
 }
 
+void DrmRenderer::initRotateBuffer(int frameWidth, int frameHeight, uint32_t format)
+{
+    // acquire new DRM PRIME buffer for rotate screen
+    int ret;
+    struct drm_mode_create_dumb dmcd = {};
+    dmcd.bpp = format == DRM_FORMAT_NV12 ? 8:10;
+    dmcd.width = frameWidth;
+    dmcd.height = frameHeight * 2;
+
+    do {
+        ret = ioctl(m_DrmFd, DRM_IOCTL_MODE_CREATE_DUMB, &dmcd);
+    } while (ret == -1 && (errno == EINTR || errno == EAGAIN));
+
+    struct drm_prime_handle dph = {};
+    dph.handle = dmcd.handle;
+    dph.fd = -1;
+
+    do {
+        ret = ioctl(m_DrmFd, DRM_IOCTL_PRIME_HANDLE_TO_FD, &dph);
+    } while (ret == -1 && (errno == EINTR || errno == EAGAIN));
+
+    SDL_assert(!ret);
+    m_RotPrimeFd = dph.fd;
+
+    // setup rotation
+    c_RkRgaInit();
+    src_info.mmuFlag = 1;
+    src_info.rotation = HAL_TRANSFORM_ROT_270;
+
+    rga_set_rect(&src_info.rect, 0, 0, frameWidth, frameHeight, frameWidth, frameHeight, RK_FORMAT_YCbCr_420_SP);
+
+    dst_info.fd = m_RotPrimeFd;
+    dst_info.mmuFlag = 1;
+
+    rga_set_rect(&dst_info.rect, 0, 0, frameWidth, frameHeight, frameWidth, frameHeight, RK_FORMAT_YCbCr_420_SP);
+}
+
 enum AVPixelFormat DrmRenderer::getPreferredPixelFormat(int)
 {
     // DRM PRIME buffers
@@ -203,6 +251,7 @@ int DrmRenderer::getRendererAttributes()
 void DrmRenderer::renderFrame(AVFrame* frame)
 {
     AVDRMFrameDescriptor* drmFrame = (AVDRMFrameDescriptor*)frame->data[0];
+    AVDRMLayerDescriptor *layer = &drmFrame->layers[0];
     int err;
     uint32_t primeHandle;
     uint32_t handles[4] = {};
@@ -218,10 +267,14 @@ void DrmRenderer::renderFrame(AVFrame* frame)
 
     StreamUtils::scaleSourceToDestinationSurface(&src, &dst);
 
+    if (m_RotPrimeFd == -1) {
+        initRotateBuffer(frame->width, frame->height, layer->format);
+    }
+
     // Convert the FD in the AVDRMFrameDescriptor to a PRIME handle
     // that can be used in drmModeAddFB2()
     SDL_assert(drmFrame->nb_objects == 1);
-    err = drmPrimeFDToHandle(m_DrmFd, drmFrame->objects[0].fd, &primeHandle);
+    err = drmPrimeFDToHandle(m_DrmFd, m_RotPrimeFd, &primeHandle);
     if (err < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "drmPrimeFDToHandle() failed: %d",
@@ -253,10 +306,17 @@ void DrmRenderer::renderFrame(AVFrame* frame)
         return;
     }
 
+    src_info.fd = drmFrame->objects[0].fd;
+
+    if (c_RkRgaBlit(&src_info, &dst_info, NULL) < 0) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                  "Failed to rga blit\n");
+    }
+
     // Update the overlay
     err = drmModeSetPlane(m_DrmFd, m_PlaneId, m_CrtcId, m_CurrentFbId, 0,
-                          dst.x, dst.y,
-                          dst.w, dst.h,
+                          0, 0,
+                          320, 480,
                           0, 0,
                           frame->width << 16,
                           frame->height << 16);

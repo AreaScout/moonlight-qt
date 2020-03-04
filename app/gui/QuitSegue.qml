@@ -59,7 +59,7 @@ Item {
             id: stageLabel
             height: stageSpinner.height
             text: stageText
-            font.pointSize: 20
+            font.pointSize: 8
             verticalAlignment: Text.AlignVCenter
 
             wrapMode: Text.Wrap

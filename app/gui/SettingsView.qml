@@ -9,14 +9,28 @@ import SystemProperties 1.0
 Flickable {
     id: settingsPage
     objectName: "Settings"
+    clip: true
 
     boundsBehavior: Flickable.OvershootBounds
 
-    contentWidth: settingsColumn1.width > settingsColumn2.width ? settingsColumn1.width : settingsColumn2.width
-    contentHeight: settingsColumn1.height > settingsColumn2.height ? settingsColumn1.height : settingsColumn2.height
+    contentWidth: 480
+    contentHeight: 1800
+
+    Keys.onPressed: {
+        if ((event.key == Qt.Key_PageDown)) {
+            scrollBar.increase()
+        }
+        else if ((event.key == Qt.Key_PageUp)) {
+            scrollBar.decrease()
+        }
+    }
 
     ScrollBar.vertical: ScrollBar {
+        id: scrollBar
         parent: settingsPage.parent
+        policy: ScrollBar.AlwaysOn
+        active: scrollBar.active
+        focusPolicy: Qt.StrongFocus
         anchors {
             top: settingsPage.top
             left: settingsPage.right
@@ -47,11 +61,11 @@ Flickable {
     Column {
         padding: 10
         id: settingsColumn1
-        width: settingsPage.width / 2 - padding
+        width: 480 / 2 - padding
 
         GroupBox {
             id: basicSettingsGroupBox
-            width: (parent.width - 2 * parent.padding)
+            width: (480 - 2 * parent.padding)
             padding: 12
             title: "<font color=\"skyblue\">Basic Settings</font>"
             font.pointSize: 12
@@ -61,7 +75,7 @@ Flickable {
                 spacing: 5
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: resFPStitle
                     text: qsTr("Resolution and FPS")
                     font.pointSize: 12
@@ -69,7 +83,7 @@ Flickable {
                 }
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: resFPSdesc
                     text: qsTr("Setting values too high for your PC or network connection may cause lag, stuttering, or errors.")
                     font.pointSize: 9
@@ -300,7 +314,7 @@ Flickable {
                 }
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: bitrateTitle
                     text: qsTr("Video bitrate: ")
                     font.pointSize: 12
@@ -308,7 +322,7 @@ Flickable {
                 }
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: bitrateDesc
                     text: qsTr("Lower the bitrate on slower connections. Raise the bitrate to increase image quality.")
                     font.pointSize: 9
@@ -334,7 +348,7 @@ Flickable {
                 }
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: windowModeTitle
                     text: qsTr("Display mode")
                     font.pointSize: 12
@@ -436,7 +450,7 @@ Flickable {
         GroupBox {
 
             id: audioSettingsGroupBox
-            width: (parent.width - 2 * parent.padding)
+            width: (480 - 2 * parent.padding)
             padding: 12
             title: "<font color=\"skyblue\">Audio Settings</font>"
             font.pointSize: 12
@@ -446,7 +460,7 @@ Flickable {
                 spacing: 5
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: resAudioTitle
                     text: qsTr("Audio configuration")
                     font.pointSize: 12
@@ -492,7 +506,7 @@ Flickable {
 
         GroupBox {
             id: uiSettingsGroupBox
-            width: (parent.width - 2 * parent.padding)
+            width: (480 - 2 * parent.padding)
             padding: 12
             title: "<font color=\"skyblue\">UI Settings</font>"
             font.pointSize: 12
@@ -504,7 +518,7 @@ Flickable {
                 CheckBox {
                     id: startMaximizedCheck
                     text: "Maximize Moonlight window on startup"
-                    font.pointSize: 12
+                    font.pointSize: 9
                     enabled: SystemProperties.hasWindowManager
                     checked: !StreamingPreferences.startWindowed || !SystemProperties.hasWindowManager
                     onCheckedChanged: {
@@ -515,7 +529,7 @@ Flickable {
                 CheckBox {
                     id: connectionWarningsCheck
                     text: "Show connection quality warnings"
-                    font.pointSize: 12
+                    font.pointSize: 9
                     checked: StreamingPreferences.connectionWarnings
                     onCheckedChanged: {
                         StreamingPreferences.connectionWarnings = checked
@@ -526,7 +540,7 @@ Flickable {
                     visible: SystemProperties.hasDiscordIntegration
                     id: discordPresenceCheck
                     text: "Discord Rich Presence integration"
-                    font.pointSize: 12
+                    font.pointSize: 9
                     checked: StreamingPreferences.richPresence
                     onCheckedChanged: {
                         StreamingPreferences.richPresence = checked
@@ -539,17 +553,10 @@ Flickable {
                 }
             }
         }
-    }
-
-    Column {
-        padding: 10
-        anchors.left: settingsColumn1.right
-        id: settingsColumn2
-        width: settingsPage.width / 2 - padding
 
         GroupBox {
             id: gamepadSettingsGroupBox
-            width: (parent.width - parent.padding)
+            width: (480 - parent.padding)
             padding: 12
             title: "<font color=\"skyblue\">Input Settings</font>"
             font.pointSize: 12
@@ -561,7 +568,7 @@ Flickable {
                 CheckBox {
                     id: singleControllerCheck
                     text: "Force gamepad #1 always present"
-                    font.pointSize:  12
+                    font.pointSize:  9
                     checked: !StreamingPreferences.multiController
                     onCheckedChanged: {
                         StreamingPreferences.multiController = !checked
@@ -578,7 +585,7 @@ Flickable {
                     id: rawInputCheck
                     hoverEnabled: true
                     text: "Raw mouse input"
-                    font.pointSize:  12
+                    font.pointSize:  9
                     checked: !StreamingPreferences.mouseAcceleration
                     onCheckedChanged: {
                         StreamingPreferences.mouseAcceleration = !checked
@@ -594,7 +601,7 @@ Flickable {
                     id: gamepadMouseCheck
                     hoverEnabled: true
                     text: "Gamepad mouse mode support"
-                    font.pointSize:  12
+                    font.pointSize:  9
                     checked: StreamingPreferences.gamepadMouse
                     onCheckedChanged: {
                         StreamingPreferences.gamepadMouse = checked
@@ -610,7 +617,7 @@ Flickable {
 
         GroupBox {
             id: hostSettingsGroupBox
-            width: (parent.width - parent.padding)
+            width: (480 - parent.padding)
             padding: 12
             title: "<font color=\"skyblue\">Host Settings</font>"
             font.pointSize: 12
@@ -622,7 +629,7 @@ Flickable {
                 CheckBox {
                     id: optimizeGameSettingsCheck
                     text: "Optimize game settings"
-                    font.pointSize:  12
+                    font.pointSize:  9
                     checked: StreamingPreferences.gameOptimizations
                     onCheckedChanged: {
                         StreamingPreferences.gameOptimizations = checked
@@ -632,7 +639,7 @@ Flickable {
                 CheckBox {
                     id: audioPcCheck
                     text: "Play audio on host PC"
-                    font.pointSize:  12
+                    font.pointSize:  9
                     checked: StreamingPreferences.playAudioOnHost
                     onCheckedChanged: {
                         StreamingPreferences.playAudioOnHost = checked
@@ -643,7 +650,7 @@ Flickable {
 
         GroupBox {
             id: advancedSettingsGroupBox
-            width: (parent.width - parent.padding)
+            width: (480 - parent.padding)
             padding: 12
             title: "<font color=\"skyblue\">Advanced Settings</font>"
             font.pointSize: 12
@@ -653,7 +660,7 @@ Flickable {
                 spacing: 5
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: resVDSTitle
                     text: qsTr("Video decoder")
                     font.pointSize: 12
@@ -699,7 +706,7 @@ Flickable {
                 }
 
                 Label {
-                    width: parent.width
+                    width: 480
                     id: resVCCTitle
                     text: qsTr("Video codec")
                     font.pointSize: 12
@@ -751,7 +758,7 @@ Flickable {
                 CheckBox {
                     id: unlockUnsupportedFps
                     text: "Unlock unsupported FPS options"
-                    font.pointSize: 12
+                    font.pointSize: 9
                     checked: StreamingPreferences.unsupportedFps
                     onCheckedChanged: {
                         // This is called on init, so only do the work if we've
@@ -769,7 +776,7 @@ Flickable {
                 CheckBox {
                     id: enableMdns
                     text: "Automatically find PCs on the local network (Recommended)"
-                    font.pointSize: 12
+                    font.pointSize: 9
                     checked: StreamingPreferences.enableMdns
                     onCheckedChanged: {
                         // This is called on init, so only do the work if we've
@@ -793,7 +800,7 @@ Flickable {
                 CheckBox {
                     id: quitAppAfter
                     text: "Quit app after quitting session"
-                    font.pointSize: 12
+                    font.pointSize: 9
                     checked: StreamingPreferences.quitAppAfter
                     onCheckedChanged: {
                         StreamingPreferences.quitAppAfter = checked
@@ -801,5 +808,13 @@ Flickable {
                 }
             }
         }
+
+    }
+
+    Column {
+        padding: 10
+        anchors.left: settingsColumn1.right
+        id: settingsColumn2
+        width: settingsPage.width / 2 - padding
     }
 }

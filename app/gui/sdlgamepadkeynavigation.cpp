@@ -149,6 +149,12 @@ void SdlGamepadKeyNavigation::onPollingTimerFired()
                 // by the control in focus.
                 sendKey(type, Qt::Key_Hangup);
                 break;
+            case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+                sendKey(type, Qt::Key_PageDown);
+                break;
+            case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                sendKey(type, Qt::Key_PageUp);
+                break;
             default:
                 break;
             }
